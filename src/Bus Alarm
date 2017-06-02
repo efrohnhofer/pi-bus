@@ -1,0 +1,56 @@
+import urllib2
+import json
+import RPi.GPIO as GPIO
+import time
+import datetime
+import dateutil.parser
+import pytz
+
+def flash_led ():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(18,GPIO.OUT)
+    print "LED on"
+    GPIO.output(18,GPIO.HIGH)
+    time.sleep(1)
+    print "LED off"
+    GPIO.output(18,GPIO.LOW)
+def turn_led_on ():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(18,GPIO.OUT)
+    print "LED on"
+    GPIO.output(18,GPIO.HIGH)
+
+def turn_led_off ():
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(18,GPIO.OUT)
+    print "LED off"
+    GPIO.output(18,GPIO.LOW)
+def request_url(api_key, bus_line, bus_stop_id):
+    return 'http://api.prod.obanyc.com/api/siri/stop-monitoring.json?key={0}&$
+
+while (1==1):
+    url = request_url('7a7ab7fb-0edb-4b4f-9014-afca06aab8fd','MTA%20NYCT_M104$
+    resp = urllib2.urlopen(url)
+    print url
+    data =  json.load(resp)
+    stopVisits = (data["Siri"]["ServiceDelivery"]["StopMonitoringDelivery"][0$
+    isBusClose = False
+    for stopVisit in stopVisits:
+        monCall = stopVisit["MonitoredVehicleJourney"]["MonitoredCall"]
+        if "ExpectedArrivalTime" in monCall:
+            now = datetime.datetime.now()
+            arrival = pytz.utc.normalize(dateutil.parser.parse(monCall["Expec$
+            waittime = (arrival - now).seconds
+            if (waittime<180 and waittime>60):
+                isBusClose=True
+            print (arrival)
+            print (now)
+            print (waittime)
+   if (isBusClose):
+       turn_led_on()
+    else:
+       turn_led_off()
+    time.sleep (5)
